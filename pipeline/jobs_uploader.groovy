@@ -27,6 +27,6 @@ node {
     }
 
     stage('Deploy jobs to Jenkins') {
-        sh "/usr/local/bin/jenkins-jobs --conf ${CONF_FILE} --flush-cache update ${JOBS_DIR}"
+        sh "/var/jenkins_home/jenkins-jobs --conf ${CONF_FILE} --flush-cache update ${JOBS_DIR}"
     }
 }
