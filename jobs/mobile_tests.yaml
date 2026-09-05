@@ -1,0 +1,22 @@
+- job:
+    name: mobile_tests
+    description: "Mobile tests pipeline for Appium project"
+    project-type: pipeline
+    concurrent: true
+    parameters:
+      - string:
+          name: BRANCH
+          default: main
+          description: "Git branch name"
+      - string:
+          name: APK_URL
+          default: https://example.com/app.apk
+          description: "URL to download APK"
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/VladimirBelaz/wishlist-mobile-tests.git
+            credentials-id: github
+            branches:
+              - $BRANCH
+      script-path: pipeline/mobile-test-pipeline.groovy

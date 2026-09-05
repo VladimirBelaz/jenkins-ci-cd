@@ -1,0 +1,33 @@
+- job:
+    name: ui_tests
+    description: "UI tests pipeline for Selenium Java project"
+    project-type: pipeline
+    concurrent: true
+    parameters:
+      - string:
+          name: BRANCH
+          default: main
+          description: "Git branch name"
+      - choice:
+          name: BROWSER
+          choices:
+            - chrome
+            - firefox
+            - edge
+          description: "Browser for UI tests"
+      - bool:
+          name: HEADLESS
+          default: true
+          description: "Run tests in headless mode"
+      - string:
+          name: BASE_URL
+          default: https://otus.ru
+          description: "Base URL for tests"
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/VladimirBelaz/otus-courses.git
+            credentials-id: github
+            branches:
+              - $BRANCH
+      script-path: pipeline/ui-tests-pipeline.groovy

@@ -1,0 +1,22 @@
+- job:
+    name: running_tests
+    description: "Run UI and mobile tests from one job"
+    project-type: pipeline
+    concurrent: true
+    parameters:
+      - bool:
+          name: RUN_UI
+          default: true
+          description: "Run ui_tests"
+      - bool:
+          name: RUN_MOBILE
+          default: true
+          description: "Run mobile_tests"
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/VladimirBelaz/jenkins-ci-cd.git
+            credentials-id: github
+            branches:
+              - main
+      script-path: pipeline/run_tests.groovy
