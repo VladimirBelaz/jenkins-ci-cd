@@ -15,7 +15,7 @@ pipeline {
 
         stage('Download APK') {
             steps {
-                sh "wget -O app.apk ${params.APK_URL}"
+                sh "curl -L -o app.apk ${params.APK_URL}"
             }
         }
 
