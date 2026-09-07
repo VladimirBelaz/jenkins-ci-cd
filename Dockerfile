@@ -7,6 +7,7 @@ RUN apt-get update && \
     apt-get install -y \
       ca-certificates \
       curl \
+      wget \
       gnupg \
       git \
       lsb-release \
@@ -51,6 +52,12 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
     chmod +x ./kubectl && \
     mv ./kubectl /usr/local/bin/
+
+# Устанавливаем Chrome для UI-тестов
+RUN curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable
 
 # Переключаемся обратно на пользователя jenkins
 USER jenkins
