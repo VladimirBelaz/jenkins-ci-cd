@@ -13,6 +13,7 @@ RUN apt-get update && \
       python3-pip \
       python3-venv \
       openjdk-21-jdk \
+      maven \
       libglib2.0-0 \
       libnss3 \
       libx11-6 \
