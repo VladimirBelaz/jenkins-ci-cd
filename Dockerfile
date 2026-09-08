@@ -15,6 +15,7 @@ RUN apt-get update && \
       python3-venv \
       openjdk-21-jdk \
       maven \
+      unzip \
       libglib2.0-0 \
       libnss3 \
       libx11-6 \
@@ -32,6 +33,12 @@ RUN apt-get update && \
       libasound2 \
       libxshmfence1 \
       && apt-get clean
+
+# Устанавливаем Allure
+RUN wget -q https://github.com/allure-framework/allure2/releases/download/2.32.2/allure-2.32.2.zip && \
+    unzip allure-2.32.2.zip -d /opt && \
+    rm allure-2.32.2.zip && \
+    ln -s /opt/allure-2.32.2/bin/allure /usr/local/bin/allure
 
 # Устанавливаем Jenkins Job Builder
 RUN python3 -m venv /opt/jjb-venv && \
@@ -54,7 +61,7 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
     chmod +x ./kubectl && \
     mv ./kubectl /usr/local/bin/
 
-# Устанавливаем Chrome для UI-тестов (НОВЫЙ СПОСОБ, БЕЗ apt-key)
+# Устанавливаем Chrome для UI-тестов
 RUN curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && \
