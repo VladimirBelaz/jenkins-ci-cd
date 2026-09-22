@@ -13,6 +13,7 @@ RUN apt-get update && \
       lsb-release \
       python3-pip \
       python3-venv \
+      ansible \
       openjdk-21-jdk \
       maven \
       unzip \

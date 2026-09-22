@@ -23,6 +23,10 @@
           name: BASE_URL
           default: https://otus.ru
           description: "Base URL for tests"
+      - string:
+          name: TEST_COMPONENTS
+          default: '["login","cart"]'
+          description: 'JSON-массив компонентов, например ["login","cart"]'
     pipeline-scm:
       scm:
         - git:

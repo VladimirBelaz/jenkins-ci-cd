@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3'  // Если Maven установлен на агенте
+        maven 'Maven-3'
     }
 
     parameters {
@@ -10,22 +10,27 @@ pipeline {
         choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'edge'])
         booleanParam(name: 'HEADLESS', defaultValue: true)
         string(name: 'BASE_URL', defaultValue: 'https://otus.ru')
+        string(name: 'TEST_COMPONENTS', defaultValue: '["login","cart"]')
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout infrastructure repo (for ansible)') {
             steps {
-                checkout scm
+                git branch: 'main',
+                        credentialsId: 'github',
+                        url: 'https://github.com/VladimirBelaz/jenkins-ci-cd.git'
             }
         }
 
-        stage('Run tests') {
+        stage('Run tests via Ansible') {
             steps {
                 sh """
-                    mvn clean test \
-                        -Dbrowser=${params.BROWSER} \
-                        -Dheadless=${params.HEADLESS} \
-                        -Dbase.url=${params.BASE_URL}
+                    ansible-playbook -i ansible/inventory.ini ansible/ui-tests.yml \
+                        -e branch='${params.BRANCH}' \
+                        -e browser='${params.BROWSER}' \
+                        -e headless='${params.HEADLESS}' \
+                        -e base_url='${params.BASE_URL}' \
+                        -e '{"components": ${params.TEST_COMPONENTS}}'
                 """
             }
         }
@@ -34,7 +39,7 @@ pipeline {
             steps {
                 allure([
                         includeProperties: false,
-                        results: [[path: 'target/allure-results']]
+                        results: [[path: 'allure-results']]
                 ])
             }
         }
@@ -42,7 +47,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'target/surefire-reports/*', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
         }
     }
 }

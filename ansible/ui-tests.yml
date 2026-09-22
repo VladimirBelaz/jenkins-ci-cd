@@ -1,0 +1,54 @@
+---
+- name: Deploy and run UI tests
+  hosts: test_hosts
+  vars:
+    tests_repo: "https://github.com/VladimirBelaz/otus-courses.git"
+    tests_dir: "/tmp/otus-courses"
+    branch: "main"
+    browser: "chrome"
+    headless: "true"
+    base_url: "https://otus.ru"
+    components: []
+    workspace: "{{ lookup('env', 'WORKSPACE') | default('/tmp', true) }}"
+
+  tasks:
+    - name: Check that docker is available
+      shell: docker version
+      changed_when: false
+
+    - name: Clone or update UI tests repository
+      git:
+        repo: "{{ tests_repo }}"
+        dest: "{{ tests_dir }}"
+        version: "{{ branch }}"
+        force: yes
+
+    - name: Prepare allure-results folder in workspace
+      file:
+        path: "{{ workspace }}/allure-results"
+        state: directory
+        mode: '0777'
+
+    - name: Run UI tests inside Maven+Chrome container
+      shell: |
+        docker run --rm \
+          --network host \
+          -v {{ tests_dir }}:/tests \
+          -v {{ workspace }}/allure-results:/tests/target/allure-results \
+          -w /tests \
+          markhobson/maven-chrome:jdk-21 \
+          mvn clean test \
+            -Dbrowser={{ browser }} \
+            -Dheadless={{ headless }} \
+            -Dbase.url={{ base_url }} \
+            {% if components %} -Dcomponents='{{ components | join(",") }}' {% endif %}
+      register: ui_result
+
+    - name: Show UI tests result
+      debug:
+        msg: "UI tests finished with rc={{ ui_result.rc }}"
+
+    - name: Fail if UI tests failed
+      fail:
+        msg: "UI tests failed"
+      when: ui_result.rc != 0

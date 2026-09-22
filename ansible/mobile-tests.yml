@@ -1,0 +1,62 @@
+---
+- name: Deploy and run Mobile tests
+  hosts: test_hosts
+  vars:
+    tests_repo: "https://github.com/VladimirBelaz/wishlist-mobile-tests.git"
+    tests_dir: "/tmp/wishlist-mobile-tests"
+    branch: "main"
+    apk_url: ""
+    devices: []
+    workspace: "{{ lookup('env', 'WORKSPACE') | default('/tmp', true) }}"
+
+  tasks:
+    - name: Check that docker is available
+      shell: docker version
+      changed_when: false
+
+    - name: Clone or update Mobile tests repository
+      git:
+        repo: "{{ tests_repo }}"
+        dest: "{{ tests_dir }}"
+        version: "{{ branch }}"
+        force: yes
+
+    - name: Start emulators and Appium via docker compose
+      shell: docker compose up -d
+      args:
+        chdir: "{{ tests_dir }}"
+
+    - name: Wait for emulators to be ready
+      pause:
+        seconds: 40
+
+    - name: Prepare allure-results folder in workspace
+      file:
+        path: "{{ workspace }}/allure-results"
+        state: directory
+        mode: '0777'
+
+    - name: Run Mobile tests in Maven container
+      shell: |
+        docker run --rm \
+          --network host \
+          -v {{ tests_dir }}:/tests \
+          -v {{ workspace }}/allure-results:/tests/build/allure-results \
+          -w /tests \
+          maven:3.9-eclipse-temurin-21 \
+          mvn clean test \
+            -DapkUrl={{ apk_url }} \
+            {% if devices %} -Ddevices='{{ devices | join(",") }}' {% endif %}
+      register: mobile_result
+      ignore_errors: yes
+
+    - name: Stop emulators
+      shell: docker compose down
+      args:
+        chdir: "{{ tests_dir }}"
+      when: always
+
+    - name: Fail if Mobile tests failed
+      fail:
+        msg: "Mobile tests failed"
+      when: mobile_result.rc != 0

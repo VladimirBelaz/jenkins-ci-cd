@@ -4,31 +4,25 @@ pipeline {
     parameters {
         string(name: 'BRANCH', defaultValue: 'main')
         string(name: 'APK_URL', defaultValue: 'https://example.com/app.apk')
+        string(name: 'TEST_DEVICES', defaultValue: '["Android 12","Android 14"]')
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout infrastructure repo (for ansible)') {
             steps {
-                checkout scm
+                git branch: 'main',
+                        credentialsId: 'github',
+                        url: 'https://github.com/VladimirBelaz/jenkins-ci-cd.git'
             }
         }
 
-        stage('Download APK') {
-            steps {
-                sh "curl -L -o app.apk ${params.APK_URL}"
-            }
-        }
-
-        stage('Run Appium tests') {
+        stage('Run Mobile tests via Ansible') {
             steps {
                 sh """
-                    # Поднимаем эмулятор и Appium в Docker (упрощённо)
-                    docker run -d --name appium -p 4723:4723 \\
-                        -v \$(pwd):/tests \\
-                        appium/appium:latest \\
-                        --allow-insecure chromedriver_autodownload
-                    sleep 10
-                    gradle clean test -Dapk.path=./app.apk
+                    ansible-playbook -i ansible/inventory.ini ansible/mobile-tests.yml \
+                        -e branch='${params.BRANCH}' \
+                        -e apk_url='${params.APK_URL}' \
+                        -e '{"devices": ${params.TEST_DEVICES}}'
                 """
             }
         }
@@ -37,7 +31,7 @@ pipeline {
             steps {
                 allure([
                         includeProperties: false,
-                        results: [[path: 'build/allure-results']]
+                        results: [[path: 'allure-results']]
                 ])
             }
         }
@@ -45,7 +39,7 @@ pipeline {
 
     post {
         always {
-            sh "docker rm -f appium || true"
+            archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
         }
     }
 }

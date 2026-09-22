@@ -12,6 +12,10 @@
           name: APK_URL
           default: https://example.com/app.apk
           description: "URL to download APK"
+      - string:
+          name: TEST_DEVICES
+          default: '["Android 12","Android 14"]'
+          description: 'JSON-массив устройств, например ["Android 12","Android 14"]'
     pipeline-scm:
       scm:
         - git:
