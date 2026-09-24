@@ -10,7 +10,7 @@
           description: "Git branch name"
       - string:
           name: APK_URL
-          default: https://example.com/app.apk
+          default: https://raw.githubusercontent.com/VladimirBelaz/wishlist-mobile-tests/main/wiremock/__files/wishlist.apk
           description: "URL to download APK"
       - string:
           name: TEST_DEVICES
