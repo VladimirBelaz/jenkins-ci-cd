@@ -57,11 +57,6 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     groupadd -g 984 docker || groupmod -g 984 docker; \
     usermod -aG docker jenkins
 
-# Устанавливаем kubectl (для работы с Kubernetes)
-#RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
-#    chmod +x ./kubectl && \
-#    mv ./kubectl /usr/local/bin/
-
 # Устанавливаем Chrome для UI-тестов
 RUN curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
