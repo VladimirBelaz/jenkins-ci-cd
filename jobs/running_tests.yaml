@@ -12,6 +12,10 @@
           name: RUN_MOBILE
           default: true
           description: "Run mobile_tests"
+      - bool:
+          name: RUN_API
+          default: true
+          description: "Run api_tests"
     pipeline-scm:
       scm:
         - git:

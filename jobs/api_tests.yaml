@@ -1,0 +1,18 @@
+- job:
+    name: api_tests
+    description: "API tests pipeline for RestAssured + WireMock project"
+    project-type: pipeline
+    concurrent: true
+    parameters:
+      - string:
+          name: BRANCH
+          default: homework_3
+          description: "Git branch name"
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/VladimirBelaz/otus-courses.git
+            credentials-id: github
+            branches:
+              - $BRANCH
+      script-path: pipeline/api-test-pipeline.groovy
